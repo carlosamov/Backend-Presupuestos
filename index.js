@@ -45,7 +45,6 @@ import webSocket from './src/webSockets/wsPresupuestos.js';
 webSocket(io);
 
 // Configuración de CORS
-
 const corsOptions = {
   origin: FRONTEND_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -71,17 +70,6 @@ app.use('/api', auditRoutes);
 app.use('/api', xlsx);
 
 //Configuracion de Sequelize para la base de datos
-setDB();
-sequelize
-  .authenticate()
-  .then(() => console.log('¡Conexión exitosa con PostgreSQL! ✔'))
-  .catch((err) => console.error('Error al conectar:', err));
-
-sequelize
-  .sync({force: false, alter: true}) // Crea o actualiza las tablas según los modelos
-  .then(() => console.log('Tablas enlazadas/creadas exitosamente ✔'))
-  .catch((err) => console.error('Error al crear tablas:', err));
-
 //Funcion solo en desarrollo para inicializar la base de datos
 const customInfo = async () => {
   console.log('Iniciando base de datos...');
@@ -126,9 +114,25 @@ const customInfo = async () => {
     console.error('Inicializacion de base de datos:', error.message);
   }
 };
-customInfo()
-  .then(() => console.log('Base de datos inicializada correctamente.'))
-  .catch((error) => console.error('Error al inicializar la base de datos:', error));
+
+setDB();
+sequelize
+  .authenticate()
+  .then(() => console.log('¡Conexión exitosa con PostgreSQL! ✔'))
+  .catch((err) => console.error('Error al conectar:', err));
+
+sequelize
+  .sync({force: false, alter: true}) // Crea o actualiza las tablas según los modelos
+  .then(() => {
+      console.log('Tablas enlazadas/creadas exitosamente ✔');
+      customInfo()
+        .then(() => console.log('Base de datos inicializada correctamente.'))
+        .catch((error) => console.error('Error al inicializar la base de datos:', error));
+  })
+  .catch((err) => console.error('Error al crear tablas:', err));
+
+
+
 
 // Inicia el servidor
 const PORT = process.env.PORT || 3000;
