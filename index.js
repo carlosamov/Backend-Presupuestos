@@ -31,7 +31,7 @@ import setDB from './src/models/index.js';
 const app = express(); //instancia de express
 app.set('trust proxy', 1); //Render expone HTTPS a traves de proxy
 const server = http.createServer(app); //creación del servidor HTTP
-const FRONTEND_ORIGIN = process.env.CORS_ORIGIN || 'https://ui-presupuestos.vercel.app';
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'https://ui-presupuestos.vercel.app';
 const io = new Server(server, {
   cors: {
     origin: FRONTEND_ORIGIN,
