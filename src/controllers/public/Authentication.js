@@ -3,6 +3,13 @@ import Response from '../../utils/Response.js'; // Para manejar respuestas
 import bcrypt from 'bcrypt';
 import UserModel from '../../models/Usuario.js'; // Modelo de usuario
 
+const isProduction = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+};
+
 export default {
   login: async (req, res) => {
     const {loginNombre, clave} = req.body;
@@ -42,11 +49,7 @@ export default {
       const safeUser = user.get({plain: true});
       delete safeUser.clave;
 
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: false, //Cambiar a true si es https, por ahora, estamos en http
-        sameSite: 'lax', //Evita que otros servers envien peticiones (strict | none)
-      });
+      res.cookie('token', token, cookieOptions);
       console.log('Usuario autenticado exitosamente');
       return res.status(200).json(Response.success(200, 'Usuario encontrado', {user: safeUser}));
     } catch (err) {
@@ -58,11 +61,7 @@ export default {
   logout: async (req, res) => {
     try {
       //Eliminar la cookie del token
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: false, // Cambiar a true si es https, por ahora estamos en http
-        sameSite: 'strict', // Evita que otros servers envien peticiones
-      });
+      res.clearCookie('token', cookieOptions);
       console.log('Sesión cerrada correctamente');
       return res.status(200).json(Response.success(200, 'Sesión cerrada correctamente'));
     } catch (err) {
@@ -105,11 +104,7 @@ export default {
       }
       const newToken = generateToken(data);
 
-      res.cookie('token', newToken, {
-        httpOnly: true,
-        secure: false, // Cambiar a true si es https, por ahora estamos en http
-        sameSite: 'strict', //Evita que otros servers envien peticiones
-      });
+      res.cookie('token', newToken, cookieOptions);
       console.log('Token renovado exitosamente');
       return res.status(200).json(Response.success(200, 'Token valido', newToken));
     } catch (err) {

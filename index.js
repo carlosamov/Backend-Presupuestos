@@ -1,8 +1,9 @@
 //Importaciones
+import 'dotenv/config';
 import express from 'express'; //para las solicitudes HTTP
 import cookieParser from 'cookie-parser'; //para el manejo de cookies (por aqui se enviará el JWT)
 import path from 'path';
-//import cors from 'cors'; //para la configuracion de CORS
+import cors from 'cors'; //para la configuracion de CORS
 import {Server} from 'socket.io'; //servidor de WebSockets
 import http from 'http'; //para crear un servidor HTTP
 import Rol from './src/utils/Rol.js';
@@ -28,10 +29,12 @@ import setDB from './src/models/index.js';
 
 //configuraciones iniciales
 const app = express(); //instancia de express
+app.set('trust proxy', 1); //Render expone HTTPS a traves de proxy
 const server = http.createServer(app); //creación del servidor HTTP
+const FRONTEND_ORIGIN = process.env.CORS_ORIGIN || 'https://ui-presupuestos.vercel.app';
 const io = new Server(server, {
   cors: {
-    origin:'https://ui-presupuestos.vercel.app',
+    origin: FRONTEND_ORIGIN,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
@@ -44,7 +47,7 @@ webSocket(io);
 // Configuración de CORS
 
 const corsOptions = {
-  origin: 'https://ui-presupuestos.vercel.app',
+  origin: FRONTEND_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -128,9 +131,7 @@ customInfo()
   .catch((error) => console.error('Error al inicializar la base de datos:', error));
 
 // Inicia el servidor
-import 'dotenv/config';
-const PORT = 3000;
-const SERVER_IP = '0.0.0.0';
-server.listen(PORT, SERVER_IP, () => {
-  console.log(`Servidor corriendo en ${SERVER_IP}:${PORT} 🚀`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT} 🚀`);
 });
