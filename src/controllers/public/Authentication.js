@@ -13,7 +13,7 @@ const cookieOptions = {
 export default {
   login: async (req, res) => {
     const {loginNombre, clave} = req.body;
-    console.log($`Datos recibidos! ${loginNombre} y ${clave}`);
+    console.log(`Datos recibidos! ${loginNombre} y ${clave}`);
     if (!loginNombre || !clave) {
       console.log('Faltan datos de inicio de sesión');
       return res.status(400).json(Response.error(400, 'Faltan datos de inicio de sesión'));
