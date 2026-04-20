@@ -46,7 +46,7 @@ webSocket(io);
 
 // Configuración de CORS
 const corsOptions = {
-  origin: FRONTEND_ORIGIN,
+  origin: [FRONTEND_ORIGIN,"https://ui-presupuestos.vercel.app"]
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
