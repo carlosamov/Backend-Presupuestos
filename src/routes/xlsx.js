@@ -61,12 +61,11 @@ const copiarMerges = (origen, destino, offset = 0) => {
 
 // Ruta para marcas
 router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
-  // Lógica para crear el PDF
-  console.log('Haciendo el XLSX...');
+  console.log(`[xlsx] Inicio solicitud -> method=${req.method} url=${req.originalUrl} id=${req.params.id} token=${req.cookies?.token ? 'presente' : 'ausente'}`);
 
   const presupuesto = await Presupuesto.findByPk(req.params.id);
   if (!presupuesto) {
-    console.log('Presupuesto no encontrado');
+    console.log(`[xlsx] Presupuesto no encontrado id=${req.params.id}`);
     return res.status(404).json(Response.error(404, 'Presupuesto no encontrado'));
   }
   const detalles = await presupuesto.getDetalles({
@@ -79,7 +78,7 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
     ],
   });
   if (detalles.length === 0) {
-    console.log('No hay detalles para este presupuesto');
+    console.log(`[xlsx] No hay detalles para este presupuesto id=${req.params.id}`);
     return res.status(404).json(Response.error(404, 'No hay detalles para este presupuesto'));
   }
 
@@ -91,6 +90,7 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
     const hojaPlantilla = workbookPlantilla.getWorksheet('presupuesto');
     const finalHoja = workbookPlantilla.getWorksheet('final');
     if (!hojaPlantilla || !finalHoja) {
+      console.log(`[xlsx] Plantilla incompleta para presupuesto id=${req.params.id}`);
       return res.status(500).json(Response.error(500, 'La plantilla de Excel no contiene las hojas necesarias.'));
     }
 
@@ -237,15 +237,20 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
     };
     hoja.pageSetup.printArea = `A1:M${60 + offsetFinal}`;
 
+    const buffer = await workbook.xlsx.writeBuffer();
+    console.log(`[xlsx] Buffer generado id=${req.params.id} bytes=${buffer.length}`);
+
     //Enviar el archivo al front
+    res.status(200);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=Presupuesto_${presupuesto.id}.xlsx`);
-    const buffer = await workbook.xlsx.writeBuffer();
-    console.log('Fin del XLSX...');
-    return res.send(buffer);
+    res.setHeader('Content-Length', buffer.length);
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.end(buffer);
   }
   catch (err) {
-    console.error('Error generico al generar el XLSX:', err);
+    console.error(`[xlsx] Error generico al generar el XLSX id=${req.params.id}:`, err);
     return res.status(500).json(Response.error(500, 'Error general del servidor'));
   }
   
