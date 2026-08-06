@@ -59,9 +59,15 @@ const copiarMerges = (origen, destino, offset = 0) => {
   }
 };
 
+const logEntradaXlsx = (req, res, next) => {
+  console.log(
+    `[xlsx] Solicitud recibida -> method=${req.method} url=${req.originalUrl} id=${req.params.id} tokenCookie=${req.cookies?.token ? 'presente' : 'ausente'} tokenAuth=${req.headers.authorization?.startsWith('Bearer ') ? 'presente' : 'ausente'}`
+  );
+  next();
+};
+
 // Ruta para marcas
-router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
-  console.log(`[xlsx] Inicio solicitud -> method=${req.method} url=${req.originalUrl} id=${req.params.id} token=${req.cookies?.token ? 'presente' : 'ausente'}`);
+router.get('/xlsx/:id', logEntradaXlsx, isUser, reqID, async (req, res) => {
 
   const presupuesto = await Presupuesto.findByPk(req.params.id);
   if (!presupuesto) {
@@ -86,6 +92,7 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
     //Primero cargar la plantilla de Excel
     const workbookPlantilla = new ExcelJS.Workbook();
     const templatePath = path.resolve(__dirname, '../templates/FormatoPresupuesto.xlsx');
+    console.log(`[xlsx] Cargando plantilla desde ${templatePath}`);
     await workbookPlantilla.xlsx.readFile(templatePath);
     const hojaPlantilla = workbookPlantilla.getWorksheet('presupuesto');
     const finalHoja = workbookPlantilla.getWorksheet('final');
