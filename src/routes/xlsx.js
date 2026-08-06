@@ -60,6 +60,8 @@ const copiarMerges = (origen, destino, offset = 0) => {
 };
 
 const logEntradaXlsx = (req, res, next) => {
+  // Header de trazabilidad para validar en DevTools si la solicitud paso por esta ruta.
+  res.setHeader('X-Xlsx-Trace', 'route-received');
   console.log(
     `[xlsx] Solicitud recibida -> method=${req.method} url=${req.originalUrl} id=${req.params.id} tokenCookie=${req.cookies?.token ? 'presente' : 'ausente'} tokenAuth=${req.headers.authorization?.startsWith('Bearer ') ? 'presente' : 'ausente'}`
   );
