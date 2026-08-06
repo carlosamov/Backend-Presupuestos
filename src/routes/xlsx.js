@@ -27,8 +27,10 @@ const clonarPlantilla = (plantilla, destino, offset = 0) => {
       if (colNumber > 22) return; //Solo copiar hasta la columna V
       const nuevaCelda = nuevaFila.getCell(colNumber);
       nuevaCelda.value = cell.value;
-      nuevaCelda.style = JSON.parse(JSON.stringify(cell.style));
-      nuevaCelda.style.borders = cell.style.borders;
+
+      const estilo = cell.style ? JSON.parse(JSON.stringify(cell.style)) : {};
+      estilo.borders = cell.style?.borders;
+      nuevaCelda.style = estilo;
     });
     nuevaFila.height = row.height;
   });
@@ -65,7 +67,7 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
   const presupuesto = await Presupuesto.findByPk(req.params.id);
   if (!presupuesto) {
     console.log('Presupuesto no encontrado');
-    return Response.error(404, 'Presupuesto no encontrado');
+    return res.status(404).json(Response.error(404, 'Presupuesto no encontrado'));
   }
   const detalles = await presupuesto.getDetalles({
     include: [
@@ -78,7 +80,7 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
   });
   if (detalles.length === 0) {
     console.log('No hay detalles para este presupuesto');
-    return Response.error(404, 'No hay detalles para este presupuesto');
+    return res.status(404).json(Response.error(404, 'No hay detalles para este presupuesto'));
   }
 
   try {
@@ -89,7 +91,7 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
     const hojaPlantilla = workbookPlantilla.getWorksheet('presupuesto');
     const finalHoja = workbookPlantilla.getWorksheet('final');
     if (!hojaPlantilla || !finalHoja) {
-      return Response.error(500, 'La plantilla de Excel no contiene las hojas necesarias.');
+      return res.status(500).json(Response.error(500, 'La plantilla de Excel no contiene las hojas necesarias.'));
     }
 
     const itemPorPagina = 22; //Cada pagina tiene 22 items
@@ -242,9 +244,9 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
     console.log('Fin del XLSX...');
     return res.send(buffer);
   }
-  catch{
-    console.log('Error generico');
-    return Response.error(500, 'Error general del servidor');
+  catch (err) {
+    console.error('Error generico al generar el XLSX:', err);
+    return res.status(500).json(Response.error(500, 'Error general del servidor'));
   }
   
 });
