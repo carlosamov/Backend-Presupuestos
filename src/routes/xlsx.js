@@ -99,10 +99,6 @@ router.get('/xlsx/:id', isUser, reqID, async (req, res) => {
   //Creacion del las paginas de items
   for (let i = 0; i < totalPaginas; i++) {
     const offset = i * tamañoPaginaItems;
-    hoja.addImage(imgID, {
-      tl: {col: 0.2, row: 0.2 + offset},
-      br: {col: 4.2, row: 4.2 + offset},
-    });
 
     //Clonar el estilo de la plantilla
     clonarPlantilla(hojaPlantilla, hoja, offset);
